@@ -34,7 +34,14 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(RouteServiceProvider::HOME);
+        $user = Auth::user();
+
+        if ($user && ($user->hasRole('admin') || $user->hasRole('moderator'))) {
+            return redirect(RouteServiceProvider::HOME);
+        }
+
+        return redirect(RouteServiceProvider::HOMEUSER);
+
     }
 
     /**
@@ -51,3 +58,12 @@ class AuthenticatedSessionController extends Controller
         return redirect('/');
     }
 }
+
+// Penjelasan:
+
+// LoginRequest: Fungsi ini mengambil parameter LoginRequest, yang merupakan instance dari form request yang digunakan untuk memvalidasi input pada saat login. Pemilihan LoginRequest sebagai parameter menunjukkan bahwa fungsi ini diharapkan menerima data input yang valid sesuai dengan aturan validasi yang didefinisikan dalam LoginRequest.
+// authenticate(): Metode ini dipanggil pada objek $request untuk mengotentikasi pengguna berdasarkan informasi yang dikirimkan melalui formulir login. Ini adalah bagian dari proses otentikasi bawaan Laravel.
+// session()->regenerate(): Ini menghasilkan ID sesi yang baru dan memastikan sesi yang aman setelah pengguna berhasil login. Ini adalah tindakan keamanan untuk melindungi dari serangan CSRF (Cross-Site Request Forgery).
+// Auth::user(): Mengambil objek pengguna yang saat ini diotentikasi dari sistem otentikasi Laravel.
+// hasRole(): Sebuah metode yang digunakan untuk memeriksa apakah pengguna memiliki peran tertentu. Dalam hal ini, kita memeriksa apakah pengguna memiliki peran 'admin' atau 'moderator'.
+// Redirect ke HOME atau HOMEUSER: Jika pengguna memiliki peran 'admin' atau 'moderator', mereka diarahkan ke RouteServiceProvider::HOME. Jika tidak, mereka diarahkan ke RouteServiceProvider::HOMEUSER. Ini mengimplementasikan logika bahwa hanya admin atau moderator yang diizinkan mengakses HOME, sedangkan pengguna dengan peran lain diarahkan ke HOMEUSER.
